@@ -37,8 +37,8 @@ class YoutubeSource extends SourceComponent {
 
   static canPlay = (src: string) => MATCH_URL.test(src);
 
-  async load(src: string) {
-    const { onReady, onError } = this.props;
+  async load() {
+    const { src, onReady, onError } = this.props;
 
     // Initialize youtube iframe api
     if(!(window as any)['YT'] && !ytApiLoaded) {

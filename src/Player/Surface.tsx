@@ -16,7 +16,7 @@ class Surface extends PureComponent<SurfaceProps> {
   private sourceRef = React.createRef<SourceComponent>();
 
   componentDidMount() {
-    this.sourceRef.current!.load(this.props.src);
+    this.sourceRef.current!.load();
   }
 
   componentWillUnmount() {
@@ -41,11 +41,12 @@ class Surface extends PureComponent<SurfaceProps> {
   }
 
   render() {
-    const { source: SurfaceSource } = this.props;
+    const { src, source: SurfaceSource } = this.props;
 
     return (
       <SurfaceSource
         ref={this.sourceRef}
+        src={src}
         playing={false}
         onReady={this.handleReady}
         onPlay={this.handlePlay}

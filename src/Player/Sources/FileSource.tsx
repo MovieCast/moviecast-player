@@ -1,32 +1,55 @@
 import React from 'react';
 import { SourceComponent } from './Source';
 
+const SUPPORTED_EXTENSIONS = /\.(mp4|og[gv]|webm|mov|m4v)($|\?)/i;
+
 class FileSource extends SourceComponent {
 
-  /**
-   * FileSource is currently unfinished/can't play anything yet!
-   */
-  static canPlay = (src: string) => false;
+  static canPlay = (src: string) => SUPPORTED_EXTENSIONS.test(src);
 
-  load(src: string): void {
-    throw new Error("Method not implemented.");
+  private videoRef = React.createRef<HTMLVideoElement>();
+
+  load(): void {
+    //throw new Error("Method not implemented.");
+    // Not a lot to do yet...
   }
   play(): void {
-    throw new Error("Method not implemented.");
+    const promise = this.videoRef.current!.play();
+
+    promise.catch(this.props.onError);
   }
   pause(): void {
-    throw new Error("Method not implemented.");
+    this.videoRef.current!.pause();
   }
   stop(): void {
-    throw new Error("Method not implemented.");
+    this.videoRef.current!.removeAttribute('src');
   }
   seekTo(amount: number): void {
-    throw new Error("Method not implemented.");
+    this.videoRef.current!.currentTime = amount;
   }
 
   render() {
+    const { src, onReady, onPlay, onPause, onBuffer, onEnded, onError } = this.props;
+
+    const styles = {
+      height: '100%',
+      width: '100%',
+      backgroundColor: '#000'
+    }
+
     return (
-      <div>Hi me FileSource. Who u?</div>
+      <video
+        style={styles}
+        src={src}
+        ref={this.videoRef}
+        autoPlay={true}
+        onCanPlay={onReady}
+        onPlay={onPlay}
+        onPause={onPause}
+        onWaiting={onBuffer}
+        onEnded={onEnded}
+        onError={onError}
+      />
     );
   }
 }

@@ -1,6 +1,7 @@
 import { PureComponent } from "react";
 
 export interface SourceProps {
+  src: string;
   playing: boolean;
 
   onReady(): void;
@@ -26,7 +27,7 @@ export abstract class SourceComponent extends PureComponent<SourceProps> {
    * Loads the source
    * @param src The source to load
    */
-  abstract load(src: string): void;
+  abstract load(): void;
 
   /**
    * Plays the source
