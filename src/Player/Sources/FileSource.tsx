@@ -13,17 +13,25 @@ class FileSource extends SourceComponent {
     //throw new Error("Method not implemented.");
     // Not a lot to do yet...
   }
+  
   play(): void {
     const promise = this.videoRef.current!.play();
 
     promise.catch(this.props.onError);
   }
+
   pause(): void {
     this.videoRef.current!.pause();
   }
+
   stop(): void {
     this.videoRef.current!.removeAttribute('src');
   }
+
+  setVolume(volume: number) {
+    this.videoRef.current!.volume = volume;
+  }
+
   seekTo(amount: number): void {
     this.videoRef.current!.currentTime = amount;
   }

@@ -1,11 +1,12 @@
 import React, { Component } from 'react';
 import { Test } from './Player/Surface';
+import Player from './Player/Player';
 
 class App extends Component {
   render() {
     return (
       <div style={{ height: '100vh' }}>
-        <Test />
+        <Player src="https://www.youtube.com/watch?v=9cBN9_9oK4A"/>
       </div>
     );
   }

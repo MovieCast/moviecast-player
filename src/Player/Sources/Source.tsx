@@ -3,6 +3,8 @@ import { PureComponent } from "react";
 export interface SourceProps {
   src: string;
   playing: boolean;
+  volume: number;
+  mute: boolean;
 
   onReady(): void;
   onPlay(): void;
@@ -14,7 +16,9 @@ export interface SourceProps {
 
 export abstract class SourceComponent extends PureComponent<SourceProps> {
 
-  static defaultProps: Pick<SourceProps, "onReady" | "onPlay" | "onPause" | "onBuffer" | "onEnded" | "onError"> = {
+  static defaultProps: Pick<SourceProps, "volume" | "mute" | "onReady" | "onPlay" | "onPause" | "onBuffer" | "onEnded" | "onError"> = {
+    volume: 100,
+    mute: false,
     onReady: () => {},
     onPlay: () => {},
     onPause: () => {},
@@ -43,6 +47,8 @@ export abstract class SourceComponent extends PureComponent<SourceProps> {
    * Stops the source
    */
   abstract stop(): void;
+
+  abstract setVolume(volume: number): void;
 
   /**
    * Seeks the source

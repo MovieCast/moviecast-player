@@ -1,4 +1,4 @@
-import React, { PureComponent } from 'react';
+import React from 'react';
 import { SourceComponent } from './Source';
 
 const MATCH_URL = /(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))((\w|-){11})/;
@@ -38,7 +38,7 @@ class YoutubeSource extends SourceComponent {
   static canPlay = (src: string) => MATCH_URL.test(src);
 
   async load() {
-    const { src, onReady, onError } = this.props;
+    const { src, playing, onReady, onError } = this.props;
 
     // Initialize youtube iframe api
     if(!(window as any)['YT'] && !ytApiLoaded) {
@@ -59,8 +59,8 @@ class YoutubeSource extends SourceComponent {
       playerVars: {
         controls: 0,
         rel: 0,
-        autoplay: 1
-        //origin: window.location.origin
+        autoplay: playing ? 1 : 0,
+        origin: window.location.origin
       },
       events: {
         onReady: this.handleReady,
@@ -75,13 +75,17 @@ class YoutubeSource extends SourceComponent {
     // Our ref no longer works properly after youtube's player overwrote it...
     //const iFrame = this.containerRef.current as HTMLIFrameElement;
     
-    const iFrame = document.getElementById('testId') as HTMLIFrameElement;
+    const iFrame = this.player!.getIframe();
 
     try {
       // Let's remove that nasty appbar and other crap we do not want
       // PS: YouTube you should not have deleted the showinfo property from your iframe api...
 
       const youtubeHtml5Player = (iFrame.contentWindow!.document.getElementsByClassName('html5-video-player')[0]);
+
+      const observer = new MutationObserver(this.handleMutation);
+      observer.observe(youtubeHtml5Player, { childList: true,  });
+
       console.debug("[DEBUG]: Let's remove that nasty appbar and other crap we do not want!");
       console.debug("[DEBUG]: PS: YouTube you should not have deleted the showinfo property from your iframe api...");
 
@@ -95,6 +99,27 @@ class YoutubeSource extends SourceComponent {
     }
 
     this.props.onReady();
+  }
+
+  /**
+   * 
+   * @param mutations A list of mutated records
+   * @param observer The observer attatched to this callback
+   */
+  handleMutation(mutations: MutationRecord[], observer: MutationObserver) {
+    const invalidNodes = mutations
+      .filter(mutation => mutation.removedNodes.length == 0)
+      .reduce((res, mutation) => {
+        mutation.addedNodes.forEach(node => res.push(node as Element));
+
+        return res;
+      }, [] as Element[])
+      .filter(node => !node.classList.contains('html5-video-player'))
+
+    if(invalidNodes.length > 0) {
+      invalidNodes.forEach(node => node.remove())
+      console.debug(`[DEBUG]: Mutation detected, removing ${invalidNodes.length} invalid nodes`, invalidNodes);
+    }
   }
 
   /**
@@ -120,7 +145,13 @@ class YoutubeSource extends SourceComponent {
       case YT.PlayerState.CUED: // video cued
         // TODO: Maybe change this to onCue();
         //onReady(); 
+        console.log('cued');
         this.handleReady();
+        break;
+      case YT.PlayerState.UNSTARTED:
+        // Check if autoplay is on...
+        console.log('unstarted');
+        this.play();
         break;
       default:
         console.warn(`[WARN]: Unexpected state: ${data}`)
@@ -132,6 +163,8 @@ class YoutubeSource extends SourceComponent {
    */
   play() {
     if(!this.player) return;
+
+    //this.player.getIframe()
 
     this.player.playVideo();
   }
@@ -164,10 +197,10 @@ class YoutubeSource extends SourceComponent {
     }
   }
 
-  setVolume (fraction: number) {
+  setVolume(volume: number) {
     if(!this.player) return;
 
-    this.player.setVolume(fraction * 100);
+    this.player.setVolume(volume * 100);
   }
 
   mute = () => {
@@ -183,15 +216,8 @@ class YoutubeSource extends SourceComponent {
   }
 
   render() {
-    const style = {
-      height: '100%',
-      width: '100%'
-    };
-
     return (
-      <div style={style}>
-        <div ref={this.containerRef} id="testId"/>
-      </div>
+      <div ref={this.containerRef} id="testId"/>
     );
   }
 }
