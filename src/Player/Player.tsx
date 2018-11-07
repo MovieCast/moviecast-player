@@ -101,6 +101,10 @@ class Player extends PureComponent<PlayerProps, PlayerState> {
     this.setState({ muted: !this.state.muted });
   }
 
+  private handleVolumeChange = (event: any, volume: number) => {
+    this.setState({ muted: false, volume });
+  }
+
   private handleKeyPress = (event: KeyboardEvent) => {
     if(event.code === "Space") {
       this.handlePlayToggle();
@@ -136,6 +140,7 @@ class Player extends PureComponent<PlayerProps, PlayerState> {
           muted={this.state.muted}
           onPlayToggle={this.handlePlayToggle}
           onMuteToggle={this.handleMuteToggle}
+          onVolumeChange={this.handleVolumeChange}
           onFullscreenToggle={this.handleFullscreenToggle}/>
       </div>
       // </Provider>

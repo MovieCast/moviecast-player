@@ -1,5 +1,6 @@
 import React, { PureComponent } from 'react';
 import { IconButton, Typography, withStyles, WithStyles, createStyles } from '@material-ui/core';
+import { Slider } from '@material-ui/lab';
 import {
   PlayArrow, Pause,
   VolumeOff, VolumeDown, VolumeUp,
@@ -18,18 +19,44 @@ const styles = createStyles({
     color: '#fff',
   },
   wrapper: {
+    position: 'relative',
     display: 'flex',
     flex: 1,
-    paddingLeft: 10,
-    paddingRight: 10
+    //paddingLeft: 10,
+    //paddingRight: 10
+    margin: '0 10px'
   },
   time: {
     display: 'flex',
     alignItems: 'center',
     lineHeight: '17px'
   },
+  volumeSlider: {
+    width: 52,
+    display: 'flex',
+    alignItems: 'center',
+    marginRight: 15
+  },
+  slider: {
+    padding: '22px 0px',
+  },
   scrubBar: {
     flexGrow: 1
+  },
+  progressBar: {
+    //marginLeft: 10,
+    //marginRight: 10,
+    transform: 'scaleY(0.6)',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    height: 5,
+    width: '100%',
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    '&:hover': {
+      transform: 'none',
+      cursor: 'pointer'
+    }
   }
 });
 
@@ -42,6 +69,7 @@ interface Props extends WithStyles<typeof styles> {
 
   onPlayToggle(): void;
   onMuteToggle(): void;
+  onVolumeChange(event: any, volume: number): void;
   onFullscreenToggle(): void;
 }
 
@@ -81,11 +109,14 @@ class ControlsBar extends PureComponent<Props> {
   }
 
   render() {
-    const { classes, playing, duration, progress, onPlayToggle, onMuteToggle, onFullscreenToggle } = this.props;
+    const { classes, playing, duration, progress, muted, volume, onPlayToggle, onMuteToggle, onVolumeChange, onFullscreenToggle } = this.props;
 
     return (
       <div className={classes.root}>
         <div className={classes.wrapper}>
+          <div className={classes.progressBar}>
+
+          </div>
           <IconButton color="inherit" onClick={onPlayToggle}>
             {playing ? <Pause /> : <PlayArrow />}
           </IconButton>
@@ -93,6 +124,16 @@ class ControlsBar extends PureComponent<Props> {
           <IconButton color="inherit" onClick={onMuteToggle}>
             {this.renderVolumeIcon()}
           </IconButton>
+
+          <div className={classes.volumeSlider}>
+            <Slider
+              classes={{ container: classes.slider }}
+              value={muted ? 0 : volume}
+              min={0}
+              max={1}
+              step={0.1}
+              onChange={onVolumeChange}/>
+          </div>
 
           <Typography className={classes.time} color="inherit">
             {this.formatHumanDuration(progress.currentTime)} &nbsp;/&nbsp; {this.formatHumanDuration(duration)}
