@@ -214,6 +214,18 @@ class YoutubeSource extends SourceComponent {
     this.player.unMute();
   }
 
+  getDuration = () => {
+    if(!this.player) return null;
+
+    return this.player.getDuration();
+  }
+
+  getCurrentTime = () => {
+    if(!this.player) return null;
+
+    return this.player.getCurrentTime();
+  }
+
   render() {
     return (
       <div ref={this.containerRef} />

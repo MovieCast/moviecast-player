@@ -44,6 +44,14 @@ class FileSource extends SourceComponent {
     this.videoRef.current!.currentTime = amount;
   }
 
+  getDuration() {
+    return this.videoRef.current!.duration;
+  }
+
+  getCurrentTime() {
+    return this.videoRef.current!.currentTime;
+  }
+
   render() {
     const { src, autoPlay, onReady, onPlay, onPause, onBuffer, onEnded, onError } = this.props;
 

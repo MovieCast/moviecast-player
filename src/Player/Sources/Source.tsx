@@ -58,4 +58,8 @@ export abstract class SourceComponent extends PureComponent<SourceProps> {
    * @param amount The amount to seek
    */
   abstract seekTo(amount: number): void;
+
+  abstract getDuration(): number | null;
+
+  abstract getCurrentTime(): number | null;
 }

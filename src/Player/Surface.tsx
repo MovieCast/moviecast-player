@@ -19,6 +19,11 @@ const styles = {
   }
 }
 
+export interface SurfaceProgress {
+  currentTime: number,
+  loaded: number
+}
+
 interface SurfaceProps {
   src: string;
   source: typeof SourceComponent;
@@ -27,6 +32,8 @@ interface SurfaceProps {
   muted: boolean;
 
   onClick(): void;
+  onDuration(duration: number): void;
+  onProgress(progress: SurfaceProgress): void;
 }
 
 /**
@@ -38,13 +45,20 @@ class Surface extends PureComponent<SurfaceProps> {
 
   private isPlaying = false;
 
+  private progressInterval?: number;
+  private previousProgress?: SurfaceProgress;
+
   componentDidMount() {
     this.sourceRef.current!.load();
+
+    this.progressInterval = window.setInterval(this.onProgressCheck, 1000);
   }
 
   componentWillUnmount() {
     if(this.isPlaying)
       this.sourceRef.current!.stop();
+
+    clearTimeout(this.progressInterval);
   }
 
   componentWillReceiveProps(nextProps: Readonly<SurfaceProps>) {
@@ -70,7 +84,7 @@ class Surface extends PureComponent<SurfaceProps> {
     }
   }
 
-  handleReady = () => {
+  private handleReady = () => {
     const { playing, volume, muted } = this.props;
     console.debug('[DEBUG]: Surface: event-ready');
 
@@ -85,20 +99,40 @@ class Surface extends PureComponent<SurfaceProps> {
     if(playing) {
       this.sourceRef.current!.play();
     }
+
+    this.props.onDuration(this.sourceRef.current!.getDuration() || 0);
   }
 
-  handlePlay = () => {
+  private handlePlay = () => {
     console.debug('[DEBUG]: Surface: event-play');
     this.isPlaying = true;
   }
 
-  handlePause = () => {
+  private handlePause = () => {
     console.debug('[DEBUG]: Surface: event-pause');
     this.isPlaying = false;
   }
 
-  handleBuffer = () => {
+  private handleBuffer = () => {
     console.debug('[DEBUG]: Surface: event-buffer');
+  }
+
+  private onProgressCheck = () => {
+    if(this.props.source && this.sourceRef.current != null) {
+      const duration = this.sourceRef.current.getDuration();
+      const currentTime = this.sourceRef.current.getCurrentTime();
+      if(duration && currentTime) {
+        const progress: SurfaceProgress = {
+          currentTime,
+          loaded: 0 // TODO!
+        }
+
+        if(this.previousProgress == null || this.previousProgress !== progress) {
+          this.props.onProgress(progress);
+          this.previousProgress = progress;
+        }
+      }
+    }
   }
 
   render() {

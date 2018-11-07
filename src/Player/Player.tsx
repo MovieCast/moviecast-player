@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react';
 import { createStyles, withStyles, WithStyles } from '@material-ui/core';
 
-import Surface from './Surface';
+import Surface, { SurfaceProgress } from './Surface';
 import ControlsBar from './ControlsBar';
 import { SourceComponent } from './Sources/Source';
 import FileSource from './Sources/FileSource';
@@ -24,6 +24,8 @@ interface PlayerProps extends WithStyles<typeof styles>{
 export interface PlayerState {
   currentSource: typeof SourceComponent;
   playing: boolean;
+  duration: number;
+  progress: SurfaceProgress,
   volume: number;
   muted: boolean;
   fullscreen: boolean;
@@ -45,6 +47,11 @@ class Player extends PureComponent<PlayerProps, PlayerState> {
   state = {
     currentSource: FileSource,
     playing: true,
+    duration: 0,
+    progress: {
+      currentTime: 0,
+      loaded: 0
+    },
     volume: 1,
     muted: false,
     fullscreen: false,
@@ -82,6 +89,14 @@ class Player extends PureComponent<PlayerProps, PlayerState> {
     this.setState({ playing: !this.state.playing });
   }
 
+  private handleDuration = (duration: number) => {
+    this.setState({ duration });
+  }
+
+  private handleProgress = (progress: SurfaceProgress) => {
+    this.setState({ progress });
+  }
+
   private handleMuteToggle = () => {
     this.setState({ muted: !this.state.muted });
   }
@@ -110,9 +125,13 @@ class Player extends PureComponent<PlayerProps, PlayerState> {
           volume={volume}
           muted={muted}
           source={CurrentSource}
-          onClick={this.handlePlayToggle}/>
+          onClick={this.handlePlayToggle}
+          onDuration={this.handleDuration}
+          onProgress={this.handleProgress}/>
         <ControlsBar
           playing={this.state.playing}
+          duration={this.state.duration}
+          progress={this.state.progress}
           volume={this.state.volume}
           muted={this.state.muted}
           onPlayToggle={this.handlePlayToggle}
