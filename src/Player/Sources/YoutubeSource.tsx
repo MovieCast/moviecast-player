@@ -38,7 +38,7 @@ class YoutubeSource extends SourceComponent {
   static canPlay = (src: string) => MATCH_URL.test(src);
 
   async load() {
-    const { src, playing, onReady, onError } = this.props;
+    const { src, autoPlay, onError } = this.props;
 
     // Initialize youtube iframe api
     if(!(window as any)['YT'] && !ytApiLoaded) {
@@ -59,7 +59,7 @@ class YoutubeSource extends SourceComponent {
       playerVars: {
         controls: 0,
         rel: 0,
-        autoplay: playing ? 1 : 0,
+        autoplay: autoPlay ? 1 : 0,
         origin: window.location.origin
       },
       events: {
@@ -151,7 +151,6 @@ class YoutubeSource extends SourceComponent {
       case YT.PlayerState.UNSTARTED:
         // Check if autoplay is on...
         console.log('unstarted');
-        this.play();
         break;
       default:
         console.warn(`[WARN]: Unexpected state: ${data}`)
@@ -192,9 +191,9 @@ class YoutubeSource extends SourceComponent {
 
     this.player.seekTo(seconds, true);
 
-    if (!this.props.playing) {
-      this.pause();
-    }
+    // if (!this.props.playing) {
+    //   this.pause();
+    // }
   }
 
   setVolume(volume: number) {
@@ -209,7 +208,7 @@ class YoutubeSource extends SourceComponent {
     this.player.mute();
   }
 
-  unmute = () => {
+  unMute = () => {
     if(!this.player) return;
 
     this.player.unMute();
@@ -217,7 +216,7 @@ class YoutubeSource extends SourceComponent {
 
   render() {
     return (
-      <div ref={this.containerRef} id="testId"/>
+      <div ref={this.containerRef} />
     );
   }
 }

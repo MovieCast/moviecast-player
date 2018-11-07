@@ -26,6 +26,7 @@ export interface PlayerState {
   playing: boolean;
   volume: number;
   muted: boolean;
+  fullscreen: boolean;
   actions: {
     setPlaying: (playing: boolean) => void,
     setVolume: (volume: number) => void,
@@ -43,9 +44,10 @@ class Player extends PureComponent<PlayerProps, PlayerState> {
 
   state = {
     currentSource: FileSource,
-    playing: false,
-    volume: 100,
+    playing: true,
+    volume: 1,
     muted: false,
+    fullscreen: false,
     actions: {
       setPlaying: (playing: boolean) => this.setState({ playing }),
       setVolume: (volume: number) => this.setState({ volume }),
@@ -58,6 +60,12 @@ class Player extends PureComponent<PlayerProps, PlayerState> {
     if(source) {
       this.setState({ currentSource: source });
     }
+
+    document.addEventListener('keydown', this.handleKeyPress);
+  }
+
+  componentWillUnmount() {
+    document.removeEventListener('keydown', this.handleKeyPress);
   }
 
   componentWillReceiveProps(nextProps: PlayerProps) {
@@ -70,8 +78,22 @@ class Player extends PureComponent<PlayerProps, PlayerState> {
     }
   }
 
-  handlePlayToggle = () => {
+  private handlePlayToggle = () => {
     this.setState({ playing: !this.state.playing });
+  }
+
+  private handleMuteToggle = () => {
+    this.setState({ muted: !this.state.muted });
+  }
+
+  private handleKeyPress = (event: KeyboardEvent) => {
+    if(event.code === "Space") {
+      this.handlePlayToggle();
+    }
+  }
+
+  private handleFullscreenToggle = () => {
+    console.debug('[DEBUG]: Player: toggle-fullscreen, not suported yet!');
   }
 
   render() {
@@ -80,38 +102,26 @@ class Player extends PureComponent<PlayerProps, PlayerState> {
     const { currentSource: CurrentSource, playing, volume, muted } = this.state;
 
     return (
-      <Provider value={this.state}>
-        <div className={this.props.classes.root}>
-          <Surface
-            src={src}
-            playing={playing}
-            volume={volume}
-            muted={muted}
-            source={CurrentSource}/>
-          <ControlsBar
-            playing={this.state.playing}
-            onPlayToggle={this.handlePlayToggle}
-            onFullscreenToggle={() => {}}/>
-        </div>
-      </Provider>
+      // <Provider value={this.state}>
+      <div className={this.props.classes.root}>
+        <Surface
+          src={src}
+          playing={playing}
+          volume={volume}
+          muted={muted}
+          source={CurrentSource}
+          onClick={this.handlePlayToggle}/>
+        <ControlsBar
+          playing={this.state.playing}
+          volume={this.state.volume}
+          muted={this.state.muted}
+          onPlayToggle={this.handlePlayToggle}
+          onMuteToggle={this.handleMuteToggle}
+          onFullscreenToggle={this.handleFullscreenToggle}/>
+      </div>
+      // </Provider>
     )
   }
-}
-
-export function withPlayerContext<
-  P extends { playerState?: PlayerState },
-  R = Pick<P, Exclude<'playerState', P>>
-  >(
-  Component: React.ComponentClass<P> | React.StatelessComponent<P>
-  ): React.SFC<R> {
-  return function BoundComponent(props: R) {
-    console.log(props)
-    return (
-      <Consumer>
-        {value => <Component {...props} playerState={value} />}
-      </Consumer>
-    );
-  };
 }
 
 export default withStyles(styles)(Player);

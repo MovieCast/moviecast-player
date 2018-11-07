@@ -2,9 +2,11 @@ import { PureComponent } from "react";
 
 export interface SourceProps {
   src: string;
-  playing: boolean;
-  volume: number;
-  mute: boolean;
+
+  /**
+   * Whether the source should play automatically
+   */
+  autoPlay: boolean;
 
   onReady(): void;
   onPlay(): void;
@@ -16,9 +18,7 @@ export interface SourceProps {
 
 export abstract class SourceComponent extends PureComponent<SourceProps> {
 
-  static defaultProps: Pick<SourceProps, "volume" | "mute" | "onReady" | "onPlay" | "onPause" | "onBuffer" | "onEnded" | "onError"> = {
-    volume: 100,
-    mute: false,
+  static defaultProps: Pick<SourceProps, "onReady" | "onPlay" | "onPause" | "onBuffer" | "onEnded" | "onError"> = {
     onReady: () => {},
     onPlay: () => {},
     onPause: () => {},
@@ -29,7 +29,6 @@ export abstract class SourceComponent extends PureComponent<SourceProps> {
 
   /**
    * Loads the source
-   * @param src The source to load
    */
   abstract load(): void;
 
@@ -49,6 +48,10 @@ export abstract class SourceComponent extends PureComponent<SourceProps> {
   abstract stop(): void;
 
   abstract setVolume(volume: number): void;
+
+  abstract mute(): void;
+
+  abstract unMute(): void;
 
   /**
    * Seeks the source

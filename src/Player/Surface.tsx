@@ -5,12 +5,28 @@ import YoutubeSource from './Sources/YoutubeSource';
 
 import './Surface.css';
 
+const styles = {
+  root: {
+    position: 'relative',
+    width: '100%',
+    height: '100%'
+  },
+  static: {
+    position: 'absolute',
+    left: 0,
+    width: '100%',
+    height: '100%'
+  }
+}
+
 interface SurfaceProps {
   src: string;
   source: typeof SourceComponent;
   playing: boolean;
   volume: number;
   muted: boolean;
+
+  onClick(): void;
 }
 
 /**
@@ -20,38 +36,50 @@ class Surface extends PureComponent<SurfaceProps> {
 
   private sourceRef = React.createRef<SourceComponent>();
 
-  private isReady = false;
   private isPlaying = false;
-  private count = 0;
-  private aprilFools = false;
-  private aprilFoolsDate = {
-    month: 3,
-    date: 1
-  }
-  
 
   componentDidMount() {
     this.sourceRef.current!.load();
   }
 
   componentWillUnmount() {
-    // TODO: Check whether source is playing
-    this.sourceRef.current!.stop();
+    if(this.isPlaying)
+      this.sourceRef.current!.stop();
   }
 
-  isItAprilFoolDay = () => {
-    var now = new Date();
-    (now.getMonth() == this.aprilFoolsDate.month && now.getDate() == this.aprilFoolsDate.date) ? this.aprilFools = true : this.aprilFools = false;
+  componentWillReceiveProps(nextProps: Readonly<SurfaceProps>) {
+    // Sync playing state of source
+    if(nextProps.playing && !this.isPlaying) {
+      this.sourceRef.current!.play();
+    } else if(!nextProps.playing && this.isPlaying) {
+      this.sourceRef.current!.pause();
+    }
+
+    // Sync volume of source
+    if(nextProps.volume !== this.props.volume) {
+      this.sourceRef.current!.setVolume(nextProps.volume);
+    }
+
+    // Sync muted state of source
+    if(nextProps.muted !== this.props.muted) {
+      if(nextProps.muted) {
+        this.sourceRef.current!.mute();
+      } else {
+        this.sourceRef.current!.unMute();
+      }
+    }
   }
 
   handleReady = () => {
     const { playing, volume, muted } = this.props;
     console.debug('[DEBUG]: Surface: event-ready');
-    this.isItAprilFoolDay();
-    this.isReady = true;
 
     if(!muted && volume) {
       this.sourceRef.current!.setVolume(volume);
+    }
+
+    if(muted) {
+      this.sourceRef.current!.mute();
     }
 
     if(playing) {
@@ -73,21 +101,8 @@ class Surface extends PureComponent<SurfaceProps> {
     console.debug('[DEBUG]: Surface: event-buffer');
   }
 
-  handleClick = () =>{
-    if(this.aprilFools) {
-      setTimeout(() => {
-        this.isPlaying ?this.sourceRef.current!.pause() : this.sourceRef.current!.play();
-        this.count+=0.1;
-        console.log(Math.sin(this.count)*100);
-        this.handleClick();      
-      }, Math.abs(Math.sin(this.count)*1000));
-    } else {
-      this.isPlaying ?this.sourceRef.current!.pause() : this.sourceRef.current!.play();
-    }
-  }
-
   render() {
-    const { src, playing, volume, muted, source: SurfaceSource } = this.props;
+    const { src, playing, source: SurfaceSource, onClick } = this.props;
 
     return (
       <div className="Surface-root">
@@ -95,26 +110,15 @@ class Surface extends PureComponent<SurfaceProps> {
           <SurfaceSource
             ref={this.sourceRef}
             src={src}
-            playing={playing}
-            volume={volume}
-            mute={muted}
+            autoPlay={playing}
             onReady={this.handleReady}
             onPlay={this.handlePlay}
             onPause={this.handlePause} />
         </div>
-        <div className="Surface-overlay" onClick={this.handleClick}/>
+        <div className="Surface-overlay" onClick={onClick}/>
       </div>
     );
   }
 }
-
-export const Test = () => (
-  <Surface
-    src="https://www.youtube.com/watch?v=9cBN9_9oK4A"
-    source={YoutubeSource}
-    playing={true}
-    volume={100}
-    muted={false} />
-);
 
 export default Surface;

@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import { Test } from './Player/Surface';
 import Player from './Player/Player';
 
 class App extends Component {

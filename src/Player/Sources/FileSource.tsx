@@ -13,7 +13,7 @@ class FileSource extends SourceComponent {
     //throw new Error("Method not implemented.");
     // Not a lot to do yet...
   }
-  
+
   play(): void {
     const promise = this.videoRef.current!.play();
 
@@ -32,12 +32,20 @@ class FileSource extends SourceComponent {
     this.videoRef.current!.volume = volume;
   }
 
+  mute() {
+    this.videoRef.current!.muted = true;
+  }
+
+  unMute() {
+    this.videoRef.current!.muted = false;
+  }
+
   seekTo(amount: number): void {
     this.videoRef.current!.currentTime = amount;
   }
 
   render() {
-    const { src, onReady, onPlay, onPause, onBuffer, onEnded, onError } = this.props;
+    const { src, autoPlay, onReady, onPlay, onPause, onBuffer, onEnded, onError } = this.props;
 
     const styles = {
       height: '100%',
@@ -50,7 +58,7 @@ class FileSource extends SourceComponent {
         style={styles}
         src={src}
         ref={this.videoRef}
-        autoPlay={true}
+        autoPlay={autoPlay}
         onCanPlay={onReady}
         onPlay={onPlay}
         onPause={onPause}

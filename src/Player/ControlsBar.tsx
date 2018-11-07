@@ -1,7 +1,10 @@
 import React, { PureComponent } from 'react';
 import { IconButton, Typography, withStyles, WithStyles, createStyles } from '@material-ui/core';
-import { PlayArrow, Pause, Fullscreen, FullscreenExit } from '@material-ui/icons';
-import { withPlayerContext, PlayerState } from './Player';
+import {
+  PlayArrow, Pause,
+  VolumeOff, VolumeDown, VolumeUp,
+  Subtitles,
+  Fullscreen, FullscreenExit } from '@material-ui/icons';
 
 const styles = createStyles({
   root: {
@@ -30,15 +33,33 @@ const styles = createStyles({
 });
 
 interface Props extends WithStyles<typeof styles> {
-  playing: boolean
+  playing: boolean;
+  volume: number;
+  muted: boolean;
 
   onPlayToggle(): void;
+  onMuteToggle(): void;
   onFullscreenToggle(): void;
 }
 
 class ControlsBar extends PureComponent<Props> {
+  private renderVolumeIcon() {
+    const { volume, muted } = this.props;
+    if(volume <= 0 || muted) {
+      return <VolumeOff />;
+    }
+
+    if(volume > 0 && volume < 0.5) {
+      return <VolumeDown />;
+    }
+
+    if(volume >= 0.5) {
+      return <VolumeUp />;
+    }
+  }
+
   render() {
-    const { classes, playing, onPlayToggle, onFullscreenToggle } = this.props;
+    const { classes, playing, onPlayToggle, onMuteToggle, onFullscreenToggle } = this.props;
 
     return (
       <div className={classes.root}>
@@ -47,12 +68,20 @@ class ControlsBar extends PureComponent<Props> {
             {playing ? <Pause /> : <PlayArrow />}
           </IconButton>
 
+          <IconButton color="inherit" onClick={onMuteToggle}>
+            {this.renderVolumeIcon()}
+          </IconButton>
+
           <Typography className={classes.time} color="inherit">
             00:00 &nbsp;/&nbsp; 00:00
           </Typography>
 
           <div className={classes.scrubBar}/>
 
+          {/* <IconButton color="inherit" disabled>
+            <Subtitles />
+          </IconButton> */}
+          
           <IconButton color="inherit" onClick={onFullscreenToggle}>
             <Fullscreen />
           </IconButton>
